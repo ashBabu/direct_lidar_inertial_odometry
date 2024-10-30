@@ -90,8 +90,11 @@ void dlio::MapNode::savePCD(std::shared_ptr<direct_lidar_inertial_odometry::srv:
   vg.setInputCloud(m);
   vg.filter(*m);
 
-  // save map
-  int ret = pcl::io::savePCDFileBinary(p + "/dlio_map.pcd", *m);
+  // save timestamped map
+  auto now = std::chrono::system_clock::now();
+  auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+  
+  int ret = pcl::io::savePCDFileBinary(p + "/lidar_map_" +  std::to_string(timestamp)+ ".pcd", *m);
   res->success = ret == 0;
 
   if (res->success) {
