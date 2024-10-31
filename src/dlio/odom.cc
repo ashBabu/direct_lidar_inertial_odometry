@@ -34,10 +34,17 @@ dlio::OdomNode::OdomNode() : Node("dlio_odom_node") {
   this->lidar_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   auto lidar_sub_opt = rclcpp::SubscriptionOptions();
   lidar_sub_opt.callback_group = this->lidar_cb_group;
-  rclcpp::QoS qos_settings = rclcpp::QoS(rclcpp::KeepLast(10)).best_effort(); // Use best-effort delivery
-  this->lidar_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("pointcloud", qos_settings,
-      std::bind(&dlio::OdomNode::callbackPointCloud, this, std::placeholders::_1), lidar_sub_opt);
 
+  if (!simulation)
+  {
+    rclcpp::QoS qos_settings = rclcpp::QoS(rclcpp::KeepLast(1)).best_effort(); // Use best-effort delivery
+    this->lidar_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("pointcloud", qos_settings,
+      std::bind(&dlio::OdomNode::callbackPointCloud, this, std::placeholders::_1), lidar_sub_opt);
+  } else
+  {
+    this->lidar_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("pointcloud", 1,
+      std::bind(&dlio::OdomNode::callbackPointCloud, this, std::placeholders::_1), lidar_sub_opt);
+  }
   this->imu_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   auto imu_sub_opt = rclcpp::SubscriptionOptions();
   imu_sub_opt.callback_group = this->imu_cb_group;
@@ -179,6 +186,9 @@ dlio::OdomNode::OdomNode() : Node("dlio_odom_node") {
 dlio::OdomNode::~OdomNode() {}
 
 void dlio::OdomNode::getParams() {
+
+  // simulation
+  dlio::declare_param(this, "simulation", this->simulation, false);
 
   // Version
   dlio::declare_param(this, "version", this->version_, "0.0.0");

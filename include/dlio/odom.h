@@ -195,6 +195,7 @@ private:
   std::vector<int> submap_kf_idx_curr;
   std::vector<int> submap_kf_idx_prev;
 
+  bool simulation;
   bool new_submap_is_ready;
   std::future<void> submap_future;
   std::condition_variable submap_build_cv;
